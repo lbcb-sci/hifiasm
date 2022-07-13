@@ -572,7 +572,8 @@ uint64_t* source_index, long long listLen)
         ele.ml = tmp->ml;
         ele.el = tmp->el;
         ele.no_l_indel = tmp->no_l_indel;
-        
+        ele.error_rate = tmp->error_rate;
+
         add_ma_hit_t_alloc(dest_paf, &ele);
     }
 }
@@ -826,6 +827,7 @@ inline void set_reverse_overlap(ma_hit_t* dest, ma_hit_t* source)
 
     dest->rev = source->rev;
     dest->el = source->el;
+    dest->error_rate = source->error_rate;
 
 
     /****************************may have bugs********************************/
@@ -9938,11 +9940,6 @@ void clean_weak_ma_hit_t(ma_hit_t_alloc* sources, ma_hit_t_alloc* reverse_source
 }
     
 
-
-
-
-
-
 void debug_info_of_specfic_read(const char* name, ma_hit_t_alloc* sources, ma_hit_t_alloc* reverse_sources, int id, const char* command)
 {
     long long i, j, Len;
@@ -10061,6 +10058,35 @@ void ma_sg_print(const asg_t *g, const All_reads *RNF, const ma_sub_t *sub, FILE
 	}
 }
 
+void ma_csv_print(const asg_t *g, const All_reads *RNF, const ma_sub_t *sub, FILE *fp) {
+
+    for (int i = 0; i < g->n_seq; ++i) {
+        if (!g->seq[i].del) {
+            fprintf(fp, 
+            "%d [%d] LN:i:%d RC:i:%d,%d [%d] LN:i:%d RC:i:%d,0,-\n", 
+            2 * i, i, 
+            g->seq[i].len, 
+            1,
+            2 * i + 1, i,
+            g->seq[i].len,
+            1);
+        }
+    }
+
+    for (int i = 0; i < g->n_arc; ++i) {
+        const asg_arc_t *p = &g->arc[i];
+        
+        fprintf(fp,
+        "%d [%d] LN:i:%d RC:i%d,%d [%d] LN:i:%d RC:i:%d,1,1,%d %d %f\n",
+        2 * (p->ul >> 33), p->ul >> 33,
+        (int)Get_READ_LENGTH((*RNF), p->ul>>33),
+        1,
+        2 * (p->v >> 1) + 1, p->v >> 1,
+        (int)Get_READ_LENGTH((*RNF), p->v>>1),
+        1,
+        i, p->ol, 1 - p->error_rate);
+    }
+}
 
 void ma_ug_print_simple(const ma_ug_t *ug, asg_t* read_g, const ma_sub_t *coverage_cut, 
 ma_hit_t_alloc* sources, R_to_U* ruIndex, const char* prefix, FILE *fp)
@@ -17070,8 +17096,12 @@ void output_read_graph(asg_t *sg, ma_sub_t* coverage_cut, char* output_file_name
     sprintf(gfa_name, "%s.read.gfa", output_file_name);
     FILE* output_file = fopen(gfa_name, "w");
     ma_sg_print(sg, &R_INF, coverage_cut, output_file);
+
+    FILE* outCSV = fopen("output.csv", "w");
+    ma_csv_print(sg, &R_INF, coverage_cut, outCSV);
     free(gfa_name);
     fclose(output_file);
+    fclose(outCSV);
 }
 
 
@@ -30734,6 +30764,14 @@ ma_sub_t **coverage_cut_ptr, int debug_g)
     ///just need to deal with trio here
     ma_hit_contained_advance(sources, n_read, coverage_cut, ruIndex, max_hang_length, mini_overlap_length);
     sg = ma_sg_gen(sources, n_read, coverage_cut, max_hang_length, mini_overlap_length);
+
+    if(VERBOSE >= 1)
+    {
+        char* unlean_name = (char*)malloc(strlen(output_file_name)+25);
+        sprintf(unlean_name, "%s.unclean_moje", output_file_name);
+        output_read_graph(sg, coverage_cut, unlean_name, n_read);
+        free(unlean_name);
+    }
 
     ///debug_info_of_specfic_node((char*)"m64043_200504_050026/93784180/ccs", sg, ruIndex, (char*)"sbsbsb");
     init_bub_label_t(&b_mask_t, MIN(10, asm_opt.thread_num), sg->n_seq);

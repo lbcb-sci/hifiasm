@@ -64,6 +64,7 @@ typedef struct {
 	uint32_t bl:31, del:1;
 	uint8_t el;
 	uint8_t no_l_indel;
+	double error_rate;
 } ma_hit_t;
 
 typedef struct {
@@ -135,10 +136,15 @@ typedef struct {
 typedef struct {
 	uint64_t ul;
 	uint32_t v;
+
 	uint32_t ol:31, del:1;
 	uint8_t strong;
 	uint8_t el;
 	uint8_t no_l_indel;
+	double error_rate;
+
+	uint32_t leftId;
+	uint32_t rightId;
 } asg_arc_t;
 
 typedef struct {
@@ -214,6 +220,11 @@ static inline int ma_hit2arc(const ma_hit_t *h, int ql, int tl, int max_hang, fl
 	int32_t tl5, tl3, ext5, ext3, qs = (int32_t)h->qns;
 	uint32_t u, v, l; // u: query end; v: target end; l: length from u to v
 
+	p->leftId = Get_qn(*h);
+	p->rightId = Get_tn(*h);
+
+	p->error_rate = h->error_rate;
+	
 	///if query and target are in different strand
 	if (h->rev) tl5 = tl - h->te, tl3 = h->ts; // tl5: 5'-end overhang (on the query strand); tl3: similar
 	else tl5 = h->ts, tl3 = tl - h->te;

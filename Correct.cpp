@@ -2207,6 +2207,7 @@ inline void recalcate_window(overlap_region_alloc* overlap_list, All_reads* R_IN
             ///error_rate = trim_error_rate(overlap_list, j);
             error_rate = non_trim_error_rate(overlap_list, j, R_INF, dumy, g_read);
             
+            overlap_list->list[j].error_rate = error_rate;
 
             ///if(error_rate <= 0.015)
             if(error_rate <= 0.03)
@@ -3004,7 +3005,8 @@ inline void recalcate_window_advance(overlap_region_alloc* overlap_list, All_rea
 
             error_rate = non_trim_error_rate(overlap_list, j, R_INF, dumy, g_read);
             
-            
+            overlap_list->list[j].error_rate = error_rate;
+
             if (error_rate <= asm_opt.max_ov_diff_final)
             {
                 overlap_list->mapped_overlaps_length += overlap_length;
@@ -8424,6 +8426,7 @@ void recalcate_high_het_overlap(overlap_region_alloc* overlap_list, All_reads* R
 
             error_rate = non_trim_error_rate(overlap_list, j, R_INF, dumy, g_read);
             
+            overlap_list->list[j].error_rate = error_rate;
             
             if (error_rate <= HIGH_HET_ERROR_RATE)
             {

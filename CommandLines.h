@@ -6,7 +6,7 @@
 
 #define HA_VERSION "0.16.1-r375"
 
-#define VERBOSE 0
+#define VERBOSE 1
 
 #define HA_F_NO_HPC          0x1
 #define HA_F_NO_KMER_FLT     0x2

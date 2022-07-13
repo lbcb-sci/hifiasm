@@ -98,6 +98,7 @@ typedef struct
     Fake_Cigar f_cigar;
 
     window_list_alloc boundary_cigars;
+    double error_rate = -1;
 } overlap_region;
 
 typedef struct

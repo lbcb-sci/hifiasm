@@ -273,7 +273,8 @@ void push_overlaps(ma_hit_t_alloc* paf, overlap_region_alloc* overlap_list, int 
             tmp.qns = overlap_list->list[i].x_id;
             tmp.qns = tmp.qns << 32;
             tmp.tn = overlap_list->list[i].y_id;
-
+            tmp.error_rate = overlap_list->list[i].error_rate;
+            
             if(if_reverse != 0)
             {
                 tmp.qns = tmp.qns | (uint64_t)(xLen - overlap_list->list[i].x_pos_s - 1);
@@ -323,7 +324,7 @@ long long push_final_overlaps(ma_hit_t_alloc* paf, ma_hit_t_alloc* reverse_paf_l
             tmp.qe = overlap_list->list[i].x_pos_e + 1;
             /**********************query***************************/
 
-
+            tmp.error_rate = overlap_list->list[i].error_rate;
 
             ///for overlap_list, the x_strand of all overlaps are 0, so the tmp.rev is the same as the y_strand
             tmp.rev = overlap_list->list[i].y_pos_strand;
@@ -381,7 +382,7 @@ long long push_final_overlaps_increment(ma_hit_t_alloc* paf, ma_hit_t_alloc* rev
             tmp.qe = overlap_list->list[i].x_pos_e + 1;
             /**********************query***************************/
 
-
+            tmp.error_rate = overlap_list->list[i].error_rate;
 
             ///for overlap_list, the x_strand of all overlaps are 0, so the tmp.rev is the same as the y_strand
             tmp.rev = overlap_list->list[i].y_pos_strand;
@@ -945,6 +946,8 @@ UC_Read* g_read, UC_Read* overlap_read, int is_match, int is_exact)
                     overlap_list->list[j].is_match = is_match;
                     overlap_list->list[j].strong = paf->buffer[inner_j].ml;
                     overlap_list->list[j].without_large_indel = paf->buffer[inner_j].no_l_indel;
+                    overlap_list->list[j].error_rate = paf->buffer[inner_j].error_rate;
+
                     if(is_exact == 1)
                     {
                         if(overlap_list->list[j].y_pos_strand == 0)
@@ -1052,6 +1055,8 @@ UC_Read* g_read, UC_Read* overlap_read, int is_match, int is_exact, float indel_
                         overlap_list->list[j].is_match = is_match;
                         overlap_list->list[j].strong = paf->buffer[inner_j].ml;
                         overlap_list->list[j].without_large_indel = paf->buffer[inner_j].no_l_indel;
+                        overlap_list->list[j].error_rate = paf->buffer[inner_j].error_rate;
+                        
                         if(is_exact == 1)
                         {
                             if(overlap_list->list[j].y_pos_strand == 0)
